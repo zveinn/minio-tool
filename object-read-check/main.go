@@ -91,9 +91,9 @@ type Object struct {
 	StorageClass   string    `json:"storageClass"`
 
 	// Custom
-	Parsed   bool `json:"parsed"`
-	Error    string
-	ReadTime int64
+	Parsed   bool   `json:"Parsed"`
+	Error    string `json:"Error"`
+	ReadTime int64  `json:"ReadTime"`
 }
 
 func main() {
@@ -207,7 +207,6 @@ func parseFullList(fileMap map[string]*Object, path string) (err error) {
 			fmt.Println("Stopping file list parser, was parsing: ", path, " ... stopped on line:", lineCount)
 			return errors.New("ctx done/cancelled")
 		}
-		// time.Sleep(1 * time.Second)
 
 		b := scanner.Bytes()
 		b = bytes.Replace(b, []byte{10}, []byte{}, -1)
@@ -224,7 +223,6 @@ func parseFullList(fileMap map[string]*Object, path string) (err error) {
 		if object.Type == "file" {
 			fileMap[object.Key+object.VersionID] = object
 		}
-		// fmt.Println(object)
 	}
 
 	err = scanner.Err()
@@ -334,7 +332,6 @@ func pipeObjects() {
 			if err != nil {
 				return
 			}
-			// fmt.Println("Skipping:", objectMap[i].Key, " ... already parsed")
 			continue
 		}
 
@@ -373,11 +370,9 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 		_ = saveFinishedObject(o)
 
 		if isDone() {
-			// fmt.Println("ctx cancel: not returning id to concurrency channel")
 			return
 		}
 
-		// fmt.Println("returning ID", cid)
 		concurrencyChan <- cid
 	}()
 
@@ -387,15 +382,20 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 
 	start := time.Now()
 	keySplit := strings.Split(o.Key, "/")
-	mo, err = client.GetObject(GlobalContext, keySplit[0], strings.Join(keySplit[1:], ""), minio.GetObjectOptions{})
+	opts := minio.GetObjectOptions{}
+	_ = opts.SetRange(0, 1000)
+	mo, err = client.GetObject(GlobalContext, keySplit[0], strings.Join(keySplit[1:], ""), opts)
 	if err != nil {
 		fmt.Println("ERR:", o.Key, " || err:", err)
 		return
 	}
 	if mo != nil {
 		o.ReadTime = time.Since(start).Milliseconds()
-		tmp := make([]byte, 1024)
+		tmp := make([]byte, 0)
 		n, err = mo.Read(tmp)
+		if err != nil {
+			fmt.Println("ERR:", o.Key, " || err:", err)
+		}
 		_ = mo.Close()
 	}
 }

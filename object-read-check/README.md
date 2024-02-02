@@ -16,6 +16,23 @@
 3. Example `done.json` `input.json` and `out.json` can be seen in the current directory
 4. The checker can handle versioned objects
 
+# Reading errors
+Errors will be added to the out.json file as `Parsed` `Error` and `ReadTime`
+Example output:
+```json
+
+{
+    "status":"success",
+    "type":"file",
+    "lastModified":"2024-02-02T14:32:22.215Z",
+    "size":2097152,
+    "key":"bucket3/test2",
+    .....
+    "parsed":true,
+    "Error":"",
+    "ReadTime":0}
+```
+
 # Creating an input.json 
 ```bash
 $ mc ls [ALIAS] --json --no-color > input.json
@@ -28,11 +45,11 @@ $ go build -o check .
 ```
 
 # Running 
-ENDPOINT = node/load balancer endpoint
-ACCESS_KEY = service account access key
-SECRET_KEY = service account secret key
-CONCURRENCY = how many object reads we can do at a time
-SLEEPTIMER = time in milliseconds to sleep between object reads
+- ENDPOINT = node/load balancer endpoint
+- ACCESS_KEY = service account access key
+- SECRET_KEY = service account secret key
+- CONCURRENCY = how many object reads we can do at a time
+- SLEEPTIMER = time in milliseconds to sleep between object reads
 
 ```bash
 $ ./check [ENDPOINT] [ACCESS_KEY] [SECRET_KEY] [CONCURRENCY] [SLEEPTIMER]
