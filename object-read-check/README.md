@@ -22,15 +22,11 @@ Example output:
 ```json
 
 {
-    "status":"success",
-    "type":"file",
-    "lastModified":"2024-02-02T14:32:22.215Z",
-    "size":2097152,
-    "key":"bucket3/test2",
-    .....
-    "parsed":true,
+    ..... 
+    "Parsed":true,
     "Error":"",
-    "ReadTime":0}
+    "ReadTime":0,
+}
 ```
 
 # Creating an input.json 
