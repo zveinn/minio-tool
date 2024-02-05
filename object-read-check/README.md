@@ -31,7 +31,7 @@ Example output:
 
 # Creating an input.json 
 ```bash
-$ mc ls [ALIAS] --json --no-color > input.json
+$ mc ls -r [ALIAS] --json --no-color > input.json
 ```
 
 # building
