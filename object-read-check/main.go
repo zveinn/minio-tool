@@ -367,6 +367,7 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 			o.Error = "minio sdk returned nil object"
 		}
 
+		// Overwrite with err if there is one
 		if err != nil {
 			o.Error = err.Error()
 		}
@@ -387,19 +388,20 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 	start := time.Now()
 	keySplit := strings.Split(o.Key, "/")
 	opts := minio.GetObjectOptions{}
-	_ = opts.SetRange(0, 1000)
+	_ = opts.SetRange(int64(o.Size)/2, (int64(o.Size)/2)+1000)
 	mo, err = client.GetObject(GlobalContext, keySplit[0], strings.Join(keySplit[1:], "/"), opts)
 	if err != nil {
 		fmt.Println("ERR:", o.Key, " || err:", err)
 		return
 	}
+
 	if mo != nil {
-		o.ReadTime = time.Since(start).Milliseconds()
 		tmp := make([]byte, 0)
 		n, err = mo.Read(tmp)
 		if err != nil {
 			fmt.Println("ERR:", o.Key, " || err:", err)
 		}
+		o.ReadTime = time.Since(start).Milliseconds()
 		_ = mo.Close()
 	}
 }
