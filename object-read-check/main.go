@@ -259,7 +259,9 @@ func createHTTPTransport() (transport *http.Transport, err error) {
 	if err != nil {
 		return
 	}
-	transport.TLSClientConfig.InsecureSkipVerify = true
+	if secure {
+		transport.TLSClientConfig.InsecureSkipVerify = true
+	}
 	return
 }
 
@@ -386,7 +388,7 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 	keySplit := strings.Split(o.Key, "/")
 	opts := minio.GetObjectOptions{}
 	_ = opts.SetRange(0, 1000)
-	mo, err = client.GetObject(GlobalContext, keySplit[0], strings.Join(keySplit[1:], ""), opts)
+	mo, err = client.GetObject(GlobalContext, keySplit[0], strings.Join(keySplit[1:], "/"), opts)
 	if err != nil {
 		fmt.Println("ERR:", o.Key, " || err:", err)
 		return
