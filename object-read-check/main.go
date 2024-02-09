@@ -388,7 +388,10 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 	start := time.Now()
 	keySplit := strings.Split(o.Key, "/")
 	opts := minio.GetObjectOptions{}
-	_ = opts.SetRange(int64(o.Size)/2, (int64(o.Size)/2)+1000)
+	// Making sure we don't devide by zero
+	if o.Size > 0 {
+		_ = opts.SetRange(int64(o.Size)/2, (int64(o.Size)/2)+1000)
+	}
 	mo, err = client.GetObject(GlobalContext, keySplit[0], strings.Join(keySplit[1:], "/"), opts)
 	if err != nil {
 		fmt.Println("ERR:", o.Key, " || err:", err)
