@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -399,15 +400,13 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 		return
 	}
 
-	if mo != nil {
-		tmp := make([]byte, 0)
-		n, err = mo.Read(tmp)
-		if err != nil {
-			fmt.Println("ERR:", o.Key, " || err:", err)
-		}
-		o.ReadTime = time.Since(start).Milliseconds()
-		_ = mo.Close()
+	defer mo.Close()
+
+	_, err = io.ReadAll(mo)
+	if err != nil {
+		fmt.Println("ERR:", o.Key, " || err:", err)
 	}
+	o.ReadTime = time.Since(start).Milliseconds()
 }
 
 func saveFinishedObject(o *Object) (err error) {
