@@ -358,13 +358,15 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 		if mo != nil {
 			if n < 0 && o.Size > 0 {
 				o.Error = "no bytes read"
-			} else if err != nil {
-				o.Error = err.Error()
 			} else {
 				o.Parsed = true
 			}
 		} else {
 			o.Error = "minio sdk returned nil object"
+		}
+
+		if err != nil {
+			o.Error = err.Error()
 		}
 
 		_ = saveFinishedObject(o)
