@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -389,11 +390,8 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 	keySplit := strings.Split(o.Key, "/")
 	opts := minio.GetObjectOptions{}
 
-	if o.Size < 5000 {
-		_ = opts.SetRange(2000, 4000)
-	} else if o.Size >= 5000 {
-		s := int64(o.Size)
-		_ = opts.SetRange((s/2)-1000, (s/2)+1000)
+	if o.Size > 1000 {
+		_ = opts.SetRange(0, 1000)
 	}
 
 	mo, err = client.GetObject(GlobalContext, keySplit[0], strings.Join(keySplit[1:], "/"), opts)
@@ -402,15 +400,13 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 		return
 	}
 
-	if mo != nil {
-		tmp := make([]byte, 0)
-		n, err = mo.Read(tmp)
-		if err != nil {
-			fmt.Println("ERR:", o.Key, " || err:", err)
-		}
-		o.ReadTime = time.Since(start).Milliseconds()
-		_ = mo.Close()
+	defer mo.Close()
+
+	_, err = io.ReadAll(mo)
+	if err != nil {
+		fmt.Println("ERR:", o.Key, " || err:", err)
 	}
+	o.ReadTime = time.Since(start).Milliseconds()
 }
 
 func saveFinishedObject(o *Object) (err error) {
