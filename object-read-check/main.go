@@ -101,8 +101,8 @@ func main() {
 	CancelContext, CancelFunc = context.WithCancel(GlobalContext)
 
 	endpoint = os.Args[1]
-	secret = os.Args[2]
-	key = os.Args[3]
+	key = os.Args[2]
+	secret = os.Args[3]
 
 	conInt, err := strconv.Atoi(os.Args[4])
 	if err != nil {
