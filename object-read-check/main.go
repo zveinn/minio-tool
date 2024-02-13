@@ -350,7 +350,6 @@ func pipeObjects() {
 func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 	var mo *minio.Object
 	var err error
-	var n int
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -359,20 +358,17 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 		wg.Done()
 
 		if mo != nil {
-			if n < 0 && o.Size > 0 {
-				o.Error = "no bytes read"
-			} else {
+			if err == nil {
 				o.Parsed = true
 			}
 		} else {
 			o.Error = "minio sdk returned nil object"
 		}
 
-		// Overwrite with err if there is one
 		if err != nil {
+			fmt.Println("ERR:", o.Key, " || err:", err)
 			o.Error = err.Error()
 		}
-
 		_ = saveFinishedObject(o)
 
 		if isDone() {
@@ -389,24 +385,35 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 	start := time.Now()
 	keySplit := strings.Split(o.Key, "/")
 	opts := minio.GetObjectOptions{}
+	readSize := o.Size
+	half := int64(o.Size / 2)
 
-	if o.Size > 1000 {
-		_ = opts.SetRange(0, 1000)
+	if o.Size > 3000 {
+		readSize = 2001
+		_ = opts.SetRange(half-1000, half+1000)
+		// fmt.Println("SR:", half-1000, half+1000, opts)
+	} else if o.Size > 1000 && o.Size <= 3000 {
+		quarter := int64(o.Size) / 4
+		readSize = ((o.Size / 4) * 2) + 1
+		_ = opts.SetRange(half-quarter, half+quarter)
+		// fmt.Println("SR:", half-quarter, half+quarter, opts)
 	}
 
 	mo, err = client.GetObject(GlobalContext, keySplit[0], strings.Join(keySplit[1:], "/"), opts)
 	if err != nil {
-		fmt.Println("ERR:", o.Key, " || err:", err)
 		return
 	}
 
 	defer mo.Close()
 
-	_, err = io.ReadAll(mo)
-	if err != nil {
-		fmt.Println("ERR:", o.Key, " || err:", err)
-	}
+	rbytes, rerr := io.ReadAll(mo)
 	o.ReadTime = time.Since(start).Milliseconds()
+	if rerr != nil {
+		err = rerr
+	}
+	if len(rbytes) != int(readSize) {
+		err = fmt.Errorf("Short read. Expected %d bytes but read %d", readSize, len(rbytes))
+	}
 }
 
 func saveFinishedObject(o *Object) (err error) {
