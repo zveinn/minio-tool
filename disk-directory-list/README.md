@@ -21,7 +21,8 @@ $ docker build --tag lister .
 ```
 
 # Running container
-Mount the path/drive you want to list at /base
+Mount a target at /base
 ```bash
-$ docker run -d -v [LOCAL_PATH]:/base lister
+$ docker run -d -v [target]:/base lister
 ```
+
