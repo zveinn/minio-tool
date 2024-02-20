@@ -13,14 +13,20 @@ var (
 )
 
 func main() {
-	baseDir = os.Args[1]
+	baseDir = os.Getenv("LISTER_BASE_DIR")
+	if baseDir == "" {
+		baseDir = "/base"
+	}
+
 	var err error
 	baseDirStats, err = os.Stat(baseDir)
 	if err != nil {
-		panic("ERROR:" + err.Error())
+		fmt.Println("ERROR:" + err.Error())
+		return
 	}
 	if !baseDirStats.IsDir() {
-		panic("ERROR: base is not a directory")
+		fmt.Println("ERROR: base is not a directory")
+		return
 	}
 
 	err = filepath.WalkDir(baseDir, func(path string, _ fs.DirEntry, err error) error {
