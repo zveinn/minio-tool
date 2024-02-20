@@ -1,5 +1,8 @@
 # Disk lister
-This program will list anything mounted at /base or a path given in LISTER_BASE_DIR
+This program will list anything mounted at /base or a path given in LISTER_BASE_DIR. 
+
+# WARNING
+There is no throttling in place.
 
 # Building binary
 ```bash
