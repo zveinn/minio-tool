@@ -405,7 +405,6 @@ func readObject(o *Object, cid int, wg *sync.WaitGroup) {
 	}
 
 	defer mo.Close()
-
 	rbytes, rerr := io.ReadAll(mo)
 	o.ReadTime = time.Since(start).Milliseconds()
 	if rerr != nil {
