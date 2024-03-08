@@ -1,4 +1,4 @@
-module github.com/minio-tool/consistency-using-redis
+module github.com/minio-tool/consistency-tool
 
 go 1.21.4
 
